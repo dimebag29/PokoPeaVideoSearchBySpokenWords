@@ -1,0 +1,101 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ぽこピー セリフ検索</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#f5f6fa;color:#252936;font-family:system-ui,sans-serif}
+main{max-width:900px;margin:0 auto;padding:32px 18px}
+h1{font-size:28px;margin-bottom:8px}
+p{line-height:1.7}
+.search{display:flex;gap:8px;margin:24px 0 12px}
+input{flex:1;min-width:0;padding:14px;font-size:16px;border:1px solid #ccc;border-radius:8px}
+button{padding:12px 20px;font-size:16px;border:0;border-radius:8px;background:#315ee8;color:white;cursor:pointer}
+button:disabled{opacity:.5;cursor:wait}
+#status,#count{color:#606777;font-size:14px}
+.result{background:white;border:1px solid #e0e3eb;border-radius:10px;padding:18px;margin:14px 0}
+.result h2{font-size:17px;margin:0 0 10px}
+.result p{white-space:pre-wrap;overflow-wrap:anywhere;margin:0 0 12px}
+a{color:#2457d6}
+mark{background:#fff0a6}
+@media(max-width:500px){.search{flex-direction:column}button{width:100%}}
+</style>
+</head>
+<body>
+<main>
+<h1>ぽこピー セリフ検索</h1>
+<p>動画内でしゃべっていたセリフや単語から、該当する動画を検索できます。</p>
+<div id="status">文字起こしデータを読み込み中...</div>
+<form id="searchForm" class="search">
+<input id="query" type="search" placeholder="例：この店めっちゃおいしい" autocomplete="off">
+<button id="searchButton" disabled>検索</button>
+</form>
+<div id="count"></div>
+<div id="results"></div>
+</main>
+<script>
+let videos=[];
+const status=document.getElementById("status");
+const query=document.getElementById("query");
+const button=document.getElementById("searchButton");
+const count=document.getElementById("count");
+const results=document.getElementById("results");
+
+fetch("./VideoIdAndSpokenWords.json")
+.then(r=>{if(!r.ok)throw Error("HTTP "+r.status);return r.json()})
+.then(data=>{
+  videos=Object.entries(data).map(([id,text])=>({id,text,lower:text.toLocaleLowerCase()}));
+  status.textContent=`読み込み完了：${videos.length.toLocaleString()}本の動画`;
+  button.disabled=false;
+})
+.catch(e=>{
+  status.textContent="データを読み込めませんでした。JSONの配置場所とファイル名をご確認ください。";
+  console.error(e);
+});
+
+document.getElementById("searchForm").addEventListener("submit",e=>{
+  e.preventDefault();
+  const words=query.value.trim().toLocaleLowerCase().split(/\s+/).filter(Boolean);
+  results.replaceChildren();
+  if(!words.length){count.textContent="検索するセリフを入力してください。";return;}
+  const found=videos.filter(v=>words.every(w=>v.lower.includes(w)));
+  count.textContent=`検索結果：${found.length.toLocaleString()}本`;
+  const fragment=document.createDocumentFragment();
+  for(const v of found.slice(0,100)){
+    const card=document.createElement("article");
+    card.className="result";
+    const title=document.createElement("h2");
+    title.textContent="動画ID："+v.id;
+    const p=document.createElement("p");
+    const first=words.map(w=>v.lower.indexOf(w)).filter(i=>i>=0).sort((a,b)=>a-b)[0]||0;
+    const start=Math.max(0,first-70);
+    let snippet=v.text.slice(start,first+Math.max(...words.map(w=>w.length))+130);
+    if(start>0)snippet="…"+snippet;
+    if(start+snippet.length<v.text.length)snippet+="…";
+    p.textContent=snippet;
+    const a=document.createElement("a");
+    a.href="https://www.youtube.com/watch?v="+encodeURIComponent(v.id);
+    a.target="_blank";
+    a.rel="noopener noreferrer";
+    a.textContent="YouTubeで動画を開く ↗";
+    card.append(title,p,a);
+    fragment.append(card);
+  }
+  if(found.length>100){
+    const note=document.createElement("p");
+    note.textContent="最初の100件を表示しています。検索語を追加して絞り込んでください。";
+    fragment.append(note);
+  }
+  if(!found.length){
+    const p=document.createElement("p");
+    p.textContent="該当する動画が見つかりませんでした。別の言葉でもお試しください。";
+    fragment.append(p);
+  }
+  results.append(fragment);
+});
+</script>
+</body>
+</html>
