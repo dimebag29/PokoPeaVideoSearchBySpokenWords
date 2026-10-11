@@ -17,9 +17,18 @@ button{padding:12px 20px;font-size:16px;border:0;border-radius:8px;background:#3
 button:disabled{opacity:.5;cursor:wait}
 #status,#count{color:#606777;font-size:14px}
 .result{background:white;border:1px solid #e0e3eb;border-radius:10px;padding:18px;margin:14px 0}
+.result-content{display:flex;align-items:center;justify-content:space-between;gap:16px}
+.result-info{flex:1;min-width:0}
 .result h2{font-size:17px;margin:0 0 12px;overflow-wrap:anywhere}
+.result-thumb{width:180px;max-width:38%;aspect-ratio:16/9;object-fit:cover;border-radius:6px;flex-shrink:0}
 a{color:#2457d6;overflow-wrap:anywhere}
-@media(max-width:500px){main{padding:24px 14px}.search{flex-direction:column}button{width:100%}}
+@media(max-width:500px){
+  main{padding:24px 14px}
+  .search{flex-direction:column}
+  button{width:100%}
+  .result-content{gap:10px}
+  .result-thumb{width:120px;max-width:38%}
+}
 </style>
 </head>
 <body>
@@ -89,14 +98,33 @@ document.getElementById("searchForm").addEventListener("submit",e=>{
   for(const v of found.slice(0,100)){
     const card=document.createElement("article");
     card.className="result";
+
+    const content=document.createElement("div");
+    content.className="result-content";
+
+    const info=document.createElement("div");
+    info.className="result-info";
+
     const title=document.createElement("h2");
     title.textContent=v.title;
+
     const a=document.createElement("a");
     a.href="https://www.youtube.com/watch?v="+encodeURIComponent(v.id);
     a.target="_blank";
     a.rel="noopener noreferrer";
     a.textContent="YouTubeで動画を開く ↗";
-    card.append(title,a);
+
+    const img=document.createElement("img");
+    img.className="result-thumb";
+    img.src="https://img.youtube.com/vi/"+encodeURIComponent(v.id)+"/mqdefault.jpg";
+    img.alt="動画サムネイル";
+    img.loading="lazy";
+    img.referrerPolicy="no-referrer";
+    img.onerror=()=>{img.style.display="none"};
+
+    info.append(title,a);
+    content.append(info,img);
+    card.append(content);
     fragment.append(card);
   }
   if(found.length>100){
