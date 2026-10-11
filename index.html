@@ -6,19 +6,19 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>セリフからぽこピー動画検索</title>
 
-<meta name="description" content="ぽこピーの動画・生放送で喋られていたワードから、元の動画を検索できるサイトです。">
+<meta name="description" content="ぽこピーの動画・生放送で話されていたセリフから、元の動画を検索できるサイトです。">
 
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dimebag29.github.io/PokoPeaVideoSearchBySpokenWords/">
 <meta property="og:title" content="セリフからぽこピー動画検索">
-<meta property="og:description" content="ぽこピーの動画・生放送で喋られていたワードから、元の動画を検索できるサイトです。">
+<meta property="og:description" content="ぽこピーの動画・生放送で話されていたセリフから、元の動画を検索できるサイトです。">
 <meta property="og:image" content="https://dimebag29.github.io/PokoPeaVideoSearchBySpokenWords/ogp.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="セリフからぽこピー動画検索">
-<meta name="twitter:description" content="ぽこピーの動画・生放送で喋られていたワードから、元の動画を検索できるサイトです。">
+<meta name="twitter:description" content="ぽこピーの動画・生放送で話されていたセリフから、元の動画を検索できるサイトです。">
 <meta name="twitter:image" content="https://dimebag29.github.io/PokoPeaVideoSearchBySpokenWords/ogp.png">
 
 <style>
@@ -27,6 +27,8 @@ body{margin:0;background:#f5f6fa;color:#252936;font-family:system-ui,sans-serif}
 main{max-width:900px;margin:0 auto;padding:32px 18px}
 h1{font-size:28px;margin-bottom:8px}
 p{line-height:1.7}
+.description{line-height:1.7}
+.description+.description{margin-top:1em}
 .search{display:flex;gap:8px;margin:24px 0 12px}
 input{flex:1;min-width:0;padding:14px;font-size:16px;border:1px solid #ccc;border-radius:8px}
 button{padding:12px 20px;font-size:16px;border:0;border-radius:8px;background:#315ee8;color:white;cursor:pointer}
@@ -36,11 +38,15 @@ button:disabled{opacity:.5;cursor:wait}
 .result-content{display:flex;align-items:center;justify-content:space-between;gap:16px}
 .result-info{flex:1;min-width:0}
 .result h2{font-size:17px;margin:0;overflow-wrap:anywhere}
+.result-title{color:#252936;text-decoration:none}
+.result-title:hover{color:#315ee8;text-decoration:underline}
+.result-title:focus-visible{outline:2px solid #315ee8;outline-offset:3px}
 .result-thumb-link{display:block;width:180px;max-width:38%;flex-shrink:0;border-radius:6px;overflow:hidden}
 .result-thumb{display:block;width:100%;aspect-ratio:16/9;object-fit:cover}
 .result-thumb-link:focus-visible{outline:3px solid #315ee8;outline-offset:3px}
 @media(max-width:500px){
   main{padding:24px 14px}
+  h1{font-size:24px}
   .search{flex-direction:column}
   button{width:100%}
   .result-content{gap:10px}
@@ -51,15 +57,22 @@ button:disabled{opacity:.5;cursor:wait}
 <body>
 <main>
 <h1>セリフからぽこピー動画検索</h1>
-<p>「ぽんぽこちゃんねる」、「ぽんぽこの秘密基地」、「ぽこピーのゆめうつつ」、「ピーナッツくん!オシャレになりたい!」チャンネルの動画･生放送内で喋られていたワードから、その動画･生放送を探し出します。2026年9月27日までに公開された動画･生放送を検索できます。</p>
+
+<p class="description">「ぽんぽこちゃんねる」、「ぽんぽこの秘密基地」、「ぽこピーのゆめうつつ」、「ピーナッツくん!オシャレになりたい!」チャンネルの動画･生放送内で話されていたセリフから、その動画･生放送を探し出します。2026年9月27日までに公開された動画･生放送を検索できます。</p>
+
+<p class="description">目的のセリフが話されている動画内の時間を調べるには、YouTubeの動画説明欄を「もっと見る」で展開し、「文字起こしを表示」をクリックします。表示された文字起こしから目的のセリフを検索することで、そのセリフが話されている時間を確認できます。</p>
+
 <div id="status">文字起こしデータを読み込み中...</div>
+
 <form id="searchForm" class="search">
-<input id="query" type="search" placeholder="動画内で喋られていたワードを入力" autocomplete="off">
+<input id="query" type="search" placeholder="動画内で話されていたセリフを入力" autocomplete="off">
 <button id="searchButton" disabled>検索</button>
 </form>
+
 <div id="count"></div>
 <div id="results"></div>
 </main>
+
 <script>
 const TRANSCRIPT_FILES=[
   "VideoIdAndSpokenWords_001.json",
@@ -90,7 +103,6 @@ async function loadData(){
     videos=Object.entries(transcripts).map(([id,text])=>({
       id,
       title:titles[id]||id,
-      text:String(text),
       lower:String(text).toLocaleLowerCase()
     }));
     status.textContent="";
@@ -105,6 +117,7 @@ document.getElementById("searchForm").addEventListener("submit",e=>{
   e.preventDefault();
   const words=query.value.trim().toLocaleLowerCase().split(/\s+/).filter(Boolean);
   results.replaceChildren();
+
   if(!words.length){
     count.textContent="検索するワードを入力してください。";
     return;
@@ -125,11 +138,17 @@ document.getElementById("searchForm").addEventListener("submit",e=>{
     info.className="result-info";
 
     const title=document.createElement("h2");
-    title.textContent=v.title;
+    const titleLink=document.createElement("a");
+    titleLink.className="result-title";
+    titleLink.textContent=v.title;
+    titleLink.href="https://www.youtube.com/watch?v="+encodeURIComponent(v.id);
+    titleLink.target="_blank";
+    titleLink.rel="noopener noreferrer";
+    title.append(titleLink);
 
     const a=document.createElement("a");
     a.className="result-thumb-link";
-    a.href="https://www.youtube.com/watch?v="+encodeURIComponent(v.id);
+    a.href=titleLink.href;
     a.target="_blank";
     a.rel="noopener noreferrer";
     a.setAttribute("aria-label",v.title+"（YouTubeで開く）");
