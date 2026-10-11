@@ -25,8 +25,8 @@ a{color:#2457d6;overflow-wrap:anywhere}
 <body>
 <main>
 <h1>セリフからぽこピー動画検索</h1>
-<p>「ぽんぽこちゃんねる」、「ぽんぽこの秘密基地」、「ぽこピーのゆめうつつ」、「ピーナッツくん!オシャレになりたい!」チャンネルの動画･生放送内で喋られていたワードから、その動画･生放送を探し出します</p>
-<div id="status">文字起こしデータと動画タイトルを読み込み中...</div>
+<p>「ぽんぽこちゃんねる」、「ぽんぽこの秘密基地」、「ぽこピーのゆめうつつ」、「ピーナッツくん!オシャレになりたい!」チャンネルの動画･生放送内で喋られていたワードから、その動画･生放送を探し出します。2026年9月27日までに公開された動画･生放送を検索できます。</p>
+<div id="status">文字起こしデータを読み込み中...</div>
 <form id="searchForm" class="search">
 <input id="query" type="search" placeholder="動画内で喋られていたワードを入力" autocomplete="off">
 <button id="searchButton" disabled>検索</button>
@@ -67,7 +67,7 @@ async function loadData(){
       text:String(text),
       lower:String(text).toLocaleLowerCase()
     }));
-    status.textContent=`読み込み完了：文字起こし ${videos.length.toLocaleString()}本、タイトル ${Object.keys(titles).length.toLocaleString()}件`;
+    status.textContent="";
     button.disabled=false;
   }catch(error){
     status.textContent="データの読み込みに失敗しました："+error.message;
