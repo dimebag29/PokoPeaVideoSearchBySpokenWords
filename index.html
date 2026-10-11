@@ -98,7 +98,7 @@ document.getElementById("searchForm").addEventListener("submit",e=>{
   count.textContent=`検索結果：${found.length.toLocaleString()}本`;
   const fragment=document.createDocumentFragment();
 
-  for(const v of found.slice(0,100)){
+  for(const v of found.slice(0,1000)){
     const card=document.createElement("article");
     card.className="result";
 
@@ -133,9 +133,9 @@ document.getElementById("searchForm").addEventListener("submit",e=>{
     fragment.append(card);
   }
 
-  if(found.length>100){
+  if(found.length>1000){
     const note=document.createElement("p");
-    note.textContent="最初の100件を表示しています。検索ワードを追加して絞り込んでください。";
+    note.textContent="最初の1,000件を表示しています。検索ワードを追加して絞り込んでください。";
     fragment.append(note);
   }
 
