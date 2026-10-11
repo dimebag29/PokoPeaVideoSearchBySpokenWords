@@ -19,15 +19,16 @@ button:disabled{opacity:.5;cursor:wait}
 .result{background:white;border:1px solid #e0e3eb;border-radius:10px;padding:18px;margin:14px 0}
 .result-content{display:flex;align-items:center;justify-content:space-between;gap:16px}
 .result-info{flex:1;min-width:0}
-.result h2{font-size:17px;margin:0 0 12px;overflow-wrap:anywhere}
-.result-thumb{width:180px;max-width:38%;aspect-ratio:16/9;object-fit:cover;border-radius:6px;flex-shrink:0}
-a{color:#2457d6;overflow-wrap:anywhere}
+.result h2{font-size:17px;margin:0;overflow-wrap:anywhere}
+.result-thumb-link{display:block;width:180px;max-width:38%;flex-shrink:0;border-radius:6px;overflow:hidden}
+.result-thumb{display:block;width:100%;aspect-ratio:16/9;object-fit:cover}
+.result-thumb-link:focus-visible{outline:3px solid #315ee8;outline-offset:3px}
 @media(max-width:500px){
   main{padding:24px 14px}
   .search{flex-direction:column}
   button{width:100%}
   .result-content{gap:10px}
-  .result-thumb{width:120px;max-width:38%}
+  .result-thumb-link{width:120px;max-width:38%}
 }
 </style>
 </head>
@@ -92,9 +93,11 @@ document.getElementById("searchForm").addEventListener("submit",e=>{
     count.textContent="検索するワードを入力してください。";
     return;
   }
+
   const found=videos.filter(v=>words.every(w=>v.lower.includes(w)));
   count.textContent=`検索結果：${found.length.toLocaleString()}本`;
   const fragment=document.createDocumentFragment();
+
   for(const v of found.slice(0,100)){
     const card=document.createElement("article");
     card.className="result";
@@ -109,10 +112,11 @@ document.getElementById("searchForm").addEventListener("submit",e=>{
     title.textContent=v.title;
 
     const a=document.createElement("a");
+    a.className="result-thumb-link";
     a.href="https://www.youtube.com/watch?v="+encodeURIComponent(v.id);
     a.target="_blank";
     a.rel="noopener noreferrer";
-    a.textContent="YouTubeで動画を開く ↗";
+    a.setAttribute("aria-label",v.title+"（YouTubeで開く）");
 
     const img=document.createElement("img");
     img.className="result-thumb";
@@ -120,23 +124,27 @@ document.getElementById("searchForm").addEventListener("submit",e=>{
     img.alt="動画サムネイル";
     img.loading="lazy";
     img.referrerPolicy="no-referrer";
-    img.onerror=()=>{img.style.display="none"};
+    img.onerror=()=>{a.style.display="none"};
 
-    info.append(title,a);
-    content.append(info,img);
+    a.append(img);
+    info.append(title);
+    content.append(info,a);
     card.append(content);
     fragment.append(card);
   }
+
   if(found.length>100){
     const note=document.createElement("p");
     note.textContent="最初の100件を表示しています。検索ワードを追加して絞り込んでください。";
     fragment.append(note);
   }
+
   if(!found.length){
     const p=document.createElement("p");
     p.textContent="該当する動画が見つかりませんでした。別のワードでもお試しください。";
     fragment.append(p);
   }
+
   results.append(fragment);
 });
 
